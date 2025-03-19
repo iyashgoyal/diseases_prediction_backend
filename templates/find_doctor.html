@@ -1,144 +1,191 @@
-{% include 'includes/default.html' %}
+{% extends 'includes/default.html' %}
+
+{% block content %}
 <head>
-        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-        <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyAVZIr_BmEFJTyl7MzSpBS_XpLrBgZEBZg&libraries=places&sensor=false"></script>
-        <script src="js/script.js"></script>
-        <!-- <script>
-            var map;
-            function initMap() {
-              map = new google.maps.Map(document.getElementById('map'), {
-                center: {lat: -34.397, lng: 150.644},
-                zoom: 8
-              });
-            }
-          </script> -->
-          <!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVZIr_BmEFJTyl7MzSpBS_XpLrBgZEBZg&callback=initalize" -->
-          async defer></script>
-<script type="text/javascript">
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+  <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyAVZIr_BmEFJTyl7MzSpBS_XpLrBgZEBZg&libraries=places&sensor=false"></script>
+  <script>
     var geocoder;
-var map;
-var markers = Array();
-var infos = Array();
-function initialize() {
-    // prepare Geocoder
-    geocoder = new google.maps.Geocoder();
-    // set initial position (Byculla)
-    var myLatlng = new google.maps.LatLng(14.4426,78.9865);
-    var myOptions = { // default map options
+    var map;
+    var markers = Array();
+    var infos = Array();
+    
+    function initialize() {
+      // prepare Geocoder
+      geocoder = new google.maps.Geocoder();
+      // set initial position (Default location)
+      var myLatlng = new google.maps.LatLng(14.4426,78.9865);
+      var myOptions = { // default map options
         zoom: 15,
         center: myLatlng,
-        mapTypeId: google.maps.MapTypeId.ROADMAP
-    };
-    map = new google.maps.Map(document.getElementById('gmap_canvas'), myOptions);
-}
-// clear overlays function
-function clearOverlays() {
-    if (markers) {
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        styles: [
+          {
+            "featureType": "poi.business",
+            "stylers": [{ "visibility": "off" }]
+          },
+          {
+            "featureType": "water",
+            "elementType": "geometry.fill",
+            "stylers": [{ "color": "#d3d3d3" }]
+          }
+        ]
+      };
+      map = new google.maps.Map(document.getElementById('map-container'), myOptions);
+    }
+    
+    // clear overlays function
+    function clearOverlays() {
+      if (markers) {
         for (i in markers) {
-            markers[i].setMap(null);
+          markers[i].setMap(null);
         }
         markers = [];
         infos = [];
+      }
     }
-}
-// clear infos function
-function clearInfos() {
-    if (infos) {
+    
+    // clear infos function
+    function clearInfos() {
+      if (infos) {
         for (i in infos) {
-            if (infos[i].getMap()) {
-                infos[i].close();
-            }
+          if (infos[i].getMap()) {
+            infos[i].close();
+          }
         }
+      }
     }
-}
-// find address function
-function findAddress() {
-    var address = '{{location}}';
-    // script uses our 'geocoder' in order to find location by address name
-    geocoder.geocode( { 'address': address}, function(results, status) {
+    
+    // find address function
+    function findAddress() {
+      var address = '{{location}}';
+      // script uses our 'geocoder' in order to find location by address name
+      geocoder.geocode( { 'address': address}, function(results, status) {
         if (status == google.maps.GeocoderStatus.OK) { // and, if everything is ok
-            // we will center map
-            var addrLocation = results[0].geometry.location;
-            map.setCenter(addrLocation);
-            // store current coordinates into hidden variables
-            document.getElementById('lat').value = results[0].geometry.location.lat();
-            document.getElementById('lng').value = results[0].geometry.location.lng();
-            // and then - add new custom marker
-            var addrMarker = new google.maps.Marker({
-                position: addrLocation,
-                map: map,
-                title: results[0].formatted_address,
-                icon: 'marker.png' 
-            });
+          // we will center map
+          var addrLocation = results[0].geometry.location;
+          map.setCenter(addrLocation);
+          // store current coordinates into hidden variables
+          document.getElementById('lat').value = results[0].geometry.location.lat();
+          document.getElementById('lng').value = results[0].geometry.location.lng();
+          // and then - add new custom marker
+          var addrMarker = new google.maps.Marker({
+            position: addrLocation,
+            map: map,
+            title: results[0].formatted_address,
+            icon: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png'
+          });
         } else {
-            alert('Geocode was not successful for the following reason: ' + status);
+          alert('Geocode was not successful for the following reason: ' + status);
         }
         findPlaces();
-    });
-}
-// find custom places function
-function findPlaces() {
-    // prepare variables (filter)
-    var lat = document.getElementById('lat').value;
-    var lng = document.getElementById('lng').value;
-    var cur_location = new google.maps.LatLng(lat, lng);
-    // prepare request to Places
-    var request = {
+      });
+    }
+    
+    // find custom places function
+    function findPlaces() {
+      // prepare variables (filter)
+      var lat = document.getElementById('lat').value;
+      var lng = document.getElementById('lng').value;
+      var cur_location = new google.maps.LatLng(lat, lng);
+      // prepare request to Places
+      var request = {
         location: cur_location,
         radius: 2000,
         types: ['hospital','doctor']
-    };
+      };
 
-    // send request
-    service = new google.maps.places.PlacesService(map);
-    service.search(request, createMarkers);
-}
-// create markers (from 'findPlaces' function)
-function createMarkers(results, status) {
-    if (status == google.maps.places.PlacesServiceStatus.OK) {
+      // send request
+      service = new google.maps.places.PlacesService(map);
+      service.search(request, createMarkers);
+    }
+    
+    // create markers (from 'findPlaces' function)
+    function createMarkers(results, status) {
+      if (status == google.maps.places.PlacesServiceStatus.OK) {
         // if we have found something - clear map (overlays)
         clearOverlays();
         // and create new markers by search result
         for (var i = 0; i < results.length; i++) {
-            createMarker(results[i]);
+          createMarker(results[i]);
         }
-    } else if (status == google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+      } else if (status == google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
         alert('Sorry, nothing is found');
+      }
     }
-}
-// creare single marker function
-function createMarker(obj) {
-    // prepare new Marker object
-    var mark = new google.maps.Marker({
+    
+    // create single marker function
+    function createMarker(obj) {
+      // prepare new Marker object
+      var mark = new google.maps.Marker({
         position: obj.geometry.location,
         map: map,
         title: obj.name
-    });
-    markers.push(mark);
-    // prepare info window
-    var infowindow = new google.maps.InfoWindow({
-        content: '<img src="' + obj.icon + '" /><font style="color:#000;">' + obj.name +
-        '<br />Rating: ' + obj.rating + '<br />Vicinity: ' + obj.vicinity + '</font>'
-    });
-    // add event handler to current marker
-    google.maps.event.addListener(mark, 'click', function() {
+      });
+      markers.push(mark);
+      // prepare info window
+      var infowindow = new google.maps.InfoWindow({
+        content: '<div style="color:#000;"><strong>' + obj.name + '</strong><br>Rating: ' + 
+                (obj.rating ? obj.rating + ' ★' : 'N/A') + 
+                '<br>Vicinity: ' + obj.vicinity + 
+                '<br><a href="https://www.google.com/maps/search/?api=1&query=' + 
+                encodeURIComponent(obj.name) + '&query_place_id=' + obj.place_id + 
+                '" target="_blank" style="color:#1565C0;">View on Google Maps</a></div>'
+      });
+      // add event handler to current marker
+      google.maps.event.addListener(mark, 'click', function() {
         clearInfos();
         infowindow.open(map,mark);
+      });
+      infos.push(infowindow);
+    }
+    
+    // initialization
+    google.maps.event.addDomListener(window, 'load', initialize);
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize map
+      findAddress();
     });
-    infos.push(infowindow);
-}
-// initialization
-google.maps.event.addDomListener(window, 'load', initialize);
-document.getElementById("doctortab").click();
-
-    </script>
-        
+  </script>
 </head>
-<body  onload="findAddress()">
-        <div id="gmap_canvas" style="position: absolute; top:200px;right:20px ;height:400px;width:800px">
-        </div>
-        <input type="hidden" id="lat" name="lat" value="18.9682846" />
-        <input type="hidden" id="lng" name="lng" value="72.8311396" />
-        <!-- <input type="hidden" value="{{location}}" id="location" name='location'> -->
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="form-card" data-aos="fade-up">
+        <h4 class="text-center mb-4">Find Doctors Near: {{location}}</h4>
         
-</body>
+        <div class="row">
+          <div class="col-md-12">
+            <div id="map-container" style="height:500px; width:100%; border-radius:0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" class="mb-4"></div>
+            <input type="hidden" id="lat" name="lat" value="18.9682846" />
+            <input type="hidden" id="lng" name="lng" value="72.8311396" />
+          </div>
+        </div>
+        
+        <div class="text-center mt-4">
+          <a href="/" class="btn btn-secondary me-2">
+            <i class="fas fa-arrow-left me-2"></i>Go Back Home
+          </a>
+          <button onclick="findAddress()" class="btn btn-primary">
+            <i class="fas fa-sync me-2"></i>Refresh Results
+          </button>
+        </div>
+      </div>
+      
+      <div class="alert alert-info mt-4" role="alert">
+        <div class="d-flex">
+          <div class="me-3">
+            <i class="fas fa-info-circle"></i>
+          </div>
+          <div>
+            <h5 class="alert-heading">Doctor Locator</h5>
+            <p class="mb-0">The map shows medical facilities and doctors near the specified location. Click on a marker to see more details about the facility. Click "View on Google Maps" in the popup for directions and more information.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

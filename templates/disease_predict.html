@@ -1,15 +1,53 @@
-{% include 'includes/default.html' %}
-<body>
-    <div id="prediction" style="position: absolute; top:200px;right:20px ;height:400px;width:800px; background-color:lightsteelblue">
-        <form>
-        <span style="font-family:Georgia, 'Times New Roman', Times, serif, sans-serif;font-size: 30px; color:indigo;
-        position: relative;left:120px; top:50px">
-            <br>   There are chances you may have
-            {{disease[0]}}
-            <br>
-        </span>
-        <br>
-        <!-- <button type="submit" class="btn btn-primary" style="padding: 10px;position: relative;left:400px; top:40px" name="search_doctor">Check Info</button> -->
-        </form>
+{% extends 'includes/default.html' %}
+
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="form-card" data-aos="fade-up">
+        <h4 class="text-center mb-4">Disease Prediction Results</h4>
+        
+        {% if disease %}
+        <div class="alert alert-info p-4 text-center" role="alert">
+          <div class="mb-3">
+            <i class="fas fa-heartbeat fa-3x mb-3"></i>
+          </div>
+          <h5 class="alert-heading mb-3">Based on your symptoms</h5>
+          <p class="mb-0">There are chances you may have:</p>
+          <h3 class="mt-3 mb-0 text-primary">{{disease[0]}}</h3>
+        </div>
+        {% else %}
+        <div class="alert alert-warning p-4 text-center" role="alert">
+          <div class="mb-3">
+            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+          </div>
+          <h5 class="alert-heading mb-3">No disease predicted</h5>
+          <p class="mb-0">We couldn't predict a disease based on the symptoms you provided. Please try again with more specific symptoms.</p>
+        </div>
+        {% endif %}
+        
+        <div class="text-center mt-4">
+          <a href="/" class="btn btn-secondary me-2">
+            <i class="fas fa-arrow-left me-2"></i>Go Back
+          </a>
+          <a href="/find_doctor" class="btn btn-primary">
+            <i class="fas fa-user-md me-2"></i>Find a Doctor
+          </a>
+        </div>
+      </div>
+      
+      <div class="alert alert-warning mt-4" role="alert">
+        <div class="d-flex">
+          <div class="me-3">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div>
+            <h5 class="alert-heading">Medical Disclaimer</h5>
+            <p class="mb-0">This prediction is based on machine learning algorithms and should not be considered as professional medical advice. Please consult with a healthcare professional for proper diagnosis and treatment.</p>
+          </div>
+        </div>
+      </div>
     </div>
-    </body>
+  </div>
+</div>
+{% endblock %}
